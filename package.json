@@ -1,0 +1,24 @@
+{
+  "name": "calapp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon app.js",
+    "json": "json-server --port 3001 --watch cal.json",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "angular": "^1.6.1",
+    "angular-animate": "^1.6.1",
+    "angular-aria": "^1.6.1",
+    "angular-material-calendar": "^0.2.14",
+    "angular-sanitize": "^1.6.1",
+    "express": "^4.14.0",
+    "json-server": "^0.9.4",
+    "nodemon": "^1.11.0"
+  }
+}
