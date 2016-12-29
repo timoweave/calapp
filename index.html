@@ -4,32 +4,19 @@
         <meta charset="UTF-8"/>
         <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/>
         <title>calendar</title>
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+              rel="stylesheet">
+        <!--  
+        <link href="./node_modules/material-design-icons/iconfont/material-icons.css" rel="stylesheet"/>
+        -->
         <link href="./node_modules/angular-material/angular-material.min.css" rel="stylesheet"/>
         <link href="./node_modules/angular-material-calendar/dist/angular-material-calendar.min.js" rel="stylesheet"/>
-        
     </head>
     
-    <body ng-app="CalApp">
-        
-        <div ng-controller="CalAppCtrl">
-            <calendar-md flex layout layout-fill
-                         calendar-direction="direction"
-                         on-prev-month="PrevMonth"
-                         on-next-month="nextMonth"
-                         on-day-click="currDay"
-                         title-format="'MMMM y'"
-                         ng-model='selectedDate'
-                         week-starts-on="firstDayOfWeek"
-                         data-start-month="11"
-                         data-start-year="2016"
-                         tooltips="tooltips"
-                         day-format="dayFormat"
-                         day-label-format="'EEE'"
-                         day-label-tooltip-format="'EEEE'"
-                         day-tooltip-format="'fullDate'"
-                         day-content="setDayContent"
-                         disable-future-selection="false">
-            </calendar-md>
+    <body>
+
+        <div ng-app="CalApp">
+            <div ui-view style="padding:8px;"></div>
         </div>
         
         <div>
@@ -37,6 +24,9 @@
             <script src="./node_modules/angular-animate/angular-animate.min.js"></script>
             <script src="./node_modules/angular-aria/angular-aria.min.js"></script>
             <script src="./node_modules/angular-sanitize/angular-sanitize.min.js"></script>
+            <script src="./node_modules/angular-modal-service/dst/angular-modal-service.min.js"></script>
+            <script src="./node_modules/angular-ui-router/release/angular-ui-router.min.js"></script>
+            <script src="./node_modules/angular-resource/angular-resource.min.js"></script>
             <script src="./node_modules/angular-material/angular-material.min.js"></script>
             <script src="./node_modules/angular-material-calendar/dist/angular-material-calendar.min.js"></script>
             <script src="./app.js"></script>
