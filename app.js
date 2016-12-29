@@ -71,7 +71,7 @@ function CalAppEditor($scope, $mdDialog, parentScope) {
 
     this.$inject = [ '$scope', '$mdDialog', 'parentScope' ];
     $scope.parentScope = parentScope;
-    console.log(parentScope.selectedAppointments);
+    // console.log(parentScope.selectedAppointments);
     // console.log($scope.appointments, $scope.selectedDate, $scope.selectedAppointments);
     
     $scope.hide = function() {
@@ -292,3 +292,122 @@ function convertMonthToNum (m) {
                      "Sep" : 8, "Oct" : 9, "Nov" : 10, "Dec" : 11 };
     return months[m];
 };
+
+
+class Appointment {
+    
+    constructor({title, desc, begin, end, date, month, year}) {
+        this.title = title;
+        this.desc = desc;
+        this.begin = begin;
+        this.end = end;
+        this.date = parseInt(date);
+        this.month = convertMonthToNum(month);
+        this.year = parseInt(year);
+        this.begin_min = Appointment.convert_min(begin);
+        this.end_min = Appointment.convert_min(end);
+    }
+    
+    print() {
+        console.log({y : this.year, m : this.month, d: this.date,
+                     b: this.begin_min, e : this.end_min});
+    }
+
+    has_overlap({begin_min, end_min, date, month, year}) {
+        if (year !== this.year) { return false; }
+        if (month !== this.month) { return false; }
+        if (date !== this.date) { return false; }
+        
+        if (this.end_min > begin_min) { return true; }
+        if (end_min < this.begin_min) { return true; }
+        return false;
+    }
+
+    static convert_min(time_string) {
+        const time_list = time_string.split(":").map((a) => (parseInt(a)));
+        const mins = time_list
+              .slice(0, -1)
+              .reduce((t, i) => {return (t + i * 60);}, 0);
+        return mins + + time_list.slice(-1)[0];
+    }
+    
+    static overlap_time(earlier, later) {
+        const earlier_min = Appointment.convert_min(earlier);
+        const later_min = Appointment.convert_min(later);
+        console.log({earlier, later, earlier_min, later_min, ovelap : earlier_min > later_min});
+        return earlier_min > later_min;
+    }
+   
+    static sort_ascend(lhs, rhs) {
+        if (lhs.year < rhs.year) { return lhs.year - rhs.year; }
+        if (lhs.month < rhs.month) { return lhs.month - rhs.moth; }
+        if (lhs.date < rhs.date) { return lhs.date - rhs.date; }
+        if (lhs.begin < rhs.begin) { return lhs.begin - rhs.begin; }
+        return lhs.end - rhs.end;
+    }
+    
+}
+
+class AppointmentManager {
+    
+    constructor() {
+        this.appointments = [];
+    }
+
+    print() {
+        this.appointments.forEach((a) => {
+            a.print();
+        });
+    }
+    
+    push(app) {
+        const any_overlapped = this.appointments.reduce((ans, app_i) => {
+            return ((ans) || (app.has_overlap(app_i)));
+        }, false);
+        if (!any_overlapped) {
+            this.appointments.push(app);
+        }
+    }
+
+    sort() {
+        const sorted_apps = this.appointments.sort(Appointment.sort_ascend);
+        this.appointments = sorted_apps;
+    }
+}
+
+let a = new Appointment({
+    title: "hello", desc : "say something",
+    begin : "00:00", end : "01:00",
+    date : 1, month : "Dec", year : "2016"
+});
+
+let b = new Appointment({
+    title: "bad", desc : "dont do this overlapped appointment",
+    begin : "00:59", end : "03:00",
+    date: 1, month : "Dec", year : 2016
+});
+
+let c = new Appointment({
+    title: "hey", desc : "what's up",
+    begin : "01:01", end : "03:00",
+    date: 1, month : "Dec", year : 2016
+});
+
+
+let m = new AppointmentManager();
+
+console.log("list of appointment to be added");
+a.print();
+b.print();
+c.print();
+
+console.log("list of appointment that was added: +a");
+m.push(c);
+m.print();
+console.log("list of appointment that was added: +b");
+m.push(b);
+m.print();
+console.log("list of appointment that was added: +c");
+m.push(a);
+m.print();
+
