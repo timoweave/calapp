@@ -1,0 +1,19 @@
+version: '2'
+services:
+  calapp:
+    image: timoweave/calapp
+    command: npm run app
+    cpu_shares: 100
+    mem_limit: 524288000
+    ports:
+      - "80:80"
+    links:
+      - caljson
+
+  caljson:
+    image: timoweave/calapp
+    command: npm run json
+    ports:
+      - "3001:3001"
+    cpu_shares: 100
+    mem_limit: 524288000
