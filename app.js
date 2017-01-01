@@ -1,7 +1,6 @@
 
 angular
-    .module("CalApp", ["ngResource", "ui.router", "ngMaterial",
-                       "materialCalendar", "angularModalService"])
+    .module("CalApp", ["ngResource", "ui.router", "ngMaterial", "materialCalendar" ])
     .constant("url", "http://localhost:3001/appointments")
     .factory("CalAppAppointment", CalAppAppointment)
     .controller("CalAppCalendar", CalAppCalendar)
@@ -89,10 +88,10 @@ function CalAppEditor($scope, $mdDialog, parentScope) {
 }
 
 function CalAppCalendar($scope, $stateParams, $location, $filter, $mdDialog,
-                        url, appointments, CalAppAppointment, ModalService) {
+                        url, appointments, CalAppAppointment) {
 
     this.$inject = [ '$scope', '$stateParams', '$location', '$filter', '$mdDialog',
-                     'url', 'appointments', 'CalAppAppointment', 'ModalService' ];
+                     'url', 'appointments', 'CalAppAppointment' ];
     init($scope);
     
     // note: afterwards, functions only
@@ -100,11 +99,11 @@ function CalAppCalendar($scope, $stateParams, $location, $filter, $mdDialog,
     function init($scope) {
         initDate($scope, $stateParams);
         initCalendar($scope);
-        initModal($scope);
+        initDialog($scope);
         initAPI($scope);        
     }
     
-    function initModal($scope) {
+    function initDialog($scope) {
         $scope.customFullscreen = false;
         $scope.edit = function() {
             $mdDialog
@@ -164,10 +163,6 @@ function CalAppCalendar($scope, $stateParams, $location, $filter, $mdDialog,
         $scope.setDayContent = setDayContent;
     }
 
-    function initDialog($scope, $mdDialog) {
-        $mdDialog.clickOutsideToClose(true);
-    }
-    
     function setDayContent(todate) {
         return onDay(todate, function(err, result) {
             if (err) {
