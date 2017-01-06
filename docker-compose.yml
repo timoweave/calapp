@@ -4,7 +4,7 @@ services:
     image: timoweave/calapp
     command: npm run app
     cpu_shares: 100
-    mem_limit: 524288000
+    mem_limit: 268435456
     ports:
       - "80:80"
     links:
@@ -16,4 +16,4 @@ services:
     ports:
       - "3001:3001"
     cpu_shares: 100
-    mem_limit: 524288000
+    mem_limit: 268435456

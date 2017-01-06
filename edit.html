@@ -4,7 +4,10 @@
         
         <md-toolbar>
             <div class="md-toolbar-tools">
-                <h2>Appointments {{selectedDate}}</h2>
+                <h2>
+                    <i class="material-icons">event_available</i>
+                    {{selectedDateTitle}}
+                </h2>
                 <span flex></span>
                 
                 <md-button ng-click="cancel()">
@@ -15,10 +18,10 @@
 
         <md-dialog-content>
             <div class="md-dialog-content">
-                <div ng-show="parentScope.selectedAppointments.length">
+                <div ng-show="selectedAppointments.length">
                     <h3>Edit</h3>
                 </div>
-                <div ng-repeat="app in parentScope.selectedAppointments">
+                <div ng-repeat="app in selectedAppointments">
                     <div  layout="row" layout-flex>
                         <div flex="10">
                             <md-input-container class="md-block">
@@ -49,7 +52,7 @@
                         <div flex="5">
                             <md-input-container>
                                 <label ng-if="$index == 0">date</label>
-                                <input ng-model="app.date" aria-label="date">
+                                <input ng-model="app.date" type="number" aria-label="date">
                             </md-input-container>
                         </div>
                         
@@ -62,7 +65,7 @@
                         <div flex="5">
                             <md-input-container>
                                 <label ng-if="$index == 0">year</label>
-                                <input ng-model="app.year" aria-label="year">
+                                <input ng-model="app.year" input="number" aria-label="year">
                             </md-input-container>
                         </div>
                         
@@ -75,45 +78,45 @@
                     <div flex="10">
                         <md-input-container class="md-block">
                             <label>Title</label>
-                            <input ng-model="parentScope.new.title" aria-label="title">
+                            <input ng-model="new.title" aria-label="title">
                         </md-input-container>
                     </div>
                     
                     <div flex="65">
                         <md-input-container class="md-block">
                             <label>Description</label>
-                            <input ng-model="parentScope.new.desc" aria-label="description">
+                            <input ng-model="new.desc" aria-label="description">
                         </md-input-container>
                     </div>
                     <div flex="5">
                         <md-input-container>
                             <label>Start</label>
-                            <input ng-model="parentScope.new.begin" aria-label="start">
+                            <input ng-model="new.begin" aria-label="start">
                         </md-input-container>
                     </div>
                     <div flex="5">
                         <md-input-container>
                             <label>End</label>
-                            <input ng-model="parentScope.new.end" aria-label="end">
+                            <input ng-model="new.end" aria-label="end">
                         </md-input-container>
                     </div>
                     <div flex="5">
                         <md-input-container>
                             <label>date</label>
-                            <input ng-model="parentScope.new.date" aria-label="date">
+                            <input ng-model="new.date" aria-label="date">
                         </md-input-container>
                     </div>
 
                     <div flex="5">
                         <md-input-container>
                             <label>month</label>
-                            <input ng-model="parentScope.new.month" aria-label="month">
+                            <input ng-model="new.month" aria-label="month">
                         </md-input-container>
                     </div>
                     <div flex="5">
                         <md-input-container>
                             <label>year</label>
-                            <input ng-model="parentScope.new.year" aria-label="year">
+                            <input ng-model="new.year" aria-label="year">
                         </md-input-container>
                     </div>
                 </div>

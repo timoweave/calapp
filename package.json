@@ -4,9 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "node": "node exp.js",
     "dev": "lite-server",
     "app": "http-server -p 80",
     "json": "json-server --port 3001 --watch cal.json",
+    "build": "docker build -t timoweave/calapp .",
+    "start": "docker-compose up",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -21,11 +24,18 @@
     "angular-sanitize": "^1.6.1",
     "angular-ui-router": "^0.3.2",
     "express": "^4.14.0",
+    "express-browserify": "^1.0.2",
     "http-server": "^0.9.0",
     "json-server": "^0.9.4",
     "lite-server": "^2.2.2",
     "live-server": "^1.1.0",
     "material-design-icons": "^3.0.1",
-    "nodemon": "^1.11.0"
+    "nodemon": "^1.11.0",
+    "pouchdb": "^6.1.1"
+  },
+  "devDependencies": {
+    "browser-sync": "^2.18.5",
+    "connect-browser-sync": "^2.0.1",
+    "webpack-dev-server": "^1.16.2"
   }
 }

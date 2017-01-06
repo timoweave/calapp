@@ -1,6 +1,6 @@
 
 angular
-    .module("CalApp", ["ngResource", "ui.router", "ngMaterial", "materialCalendar" ])
+    .module("CalApp", ["ngResource", "ui.router", "ngMaterial", "materialCalendar"])
     .constant("url", "http://localhost:3001/appointments")
     .factory("CalAppAppointment", CalAppAppointment)
     .controller("CalAppCalendar", CalAppCalendar)
@@ -20,38 +20,34 @@ function CalAppConfigRoute($stateProvider, $urlRouterProvider, url) {
 
     this.$inject = [ '$stateProvider', '$urlRouterProvider', 'url' ];
 
-    const yymmdd = getYYMMDD(); 
-    
-    const resolveAppointments = { appointments : appointmentResource };
-
     $stateProvider
-        .state('home', {
+        .state('calendar', {
             url : '/',
             controller : 'CalAppCalendar',
             templateUrl : 'cal.html',
-            params : yymmdd,
-            resolve : resolveAppointments
+            params : getYYMMDD(),
+            resolve : { appointments : appointmentResource }
         })
         .state('month', {
             url : '/:year/:month',
             controller : 'CalAppCalendar',
             templateUrl : 'cal.html',
-            params : yymmdd,
-            resolve : resolveAppointments                
+            params : getYYMMDD(),
+            resolve : { appointments : appointmentResource }
         })
         .state('date', {
             url : '/:year/:month/:date',
             controller : 'CalAppCalendar',
             templateUrl : 'cal.html',
-            params : yymmdd,
-            resolve : resolveAppointments                
+            params : getYYMMDD(),
+            resolve : { appointments : appointmentResource }
         })
-        .state('edit', {
-            url : 'edit/:year/:month/:date',
-            parent : 'CalAppCalendar',
+        .state('calendar.edit', {
+            parent : 'calendar',            
+            url : '/edit/:year/:month/:date',
             controller: 'CalAppEditor',
-            params : yymmdd,            
-            templateUrl : 'edit.html'
+            templateUrl : 'edit.html',            
+            params : getYYMMDD()
         })
     ;
 
@@ -59,20 +55,34 @@ function CalAppConfigRoute($stateProvider, $urlRouterProvider, url) {
 
     // note : functions only
 
-    function appointmentResource($resource, $stateParams) {
-        const year = $stateParams.year;
-        const month = convertNumToMonth($stateParams.month);
-        return $resource(url, {id : "@id"}, {update: { method: "PUT" } } ).query().$promise;
+    function appointmentResource($http, url) {
+
+        this.$inject = ['$http', 'url' ];
+        
+        const get_list = $http.get(url).then((resp) => {
+            const map_list = resp.data.map((d) => {
+                let data = d;
+                data.year = parseInt(d.year);
+                data.date = parseInt(d.date);
+                return data;
+            });
+            return map_list;
+        });
+        return get_list;
     }
 }
 
-function CalAppEditor($scope, $mdDialog, parentScope) {
+function CalAppEditor($scope, $mdDialog, parentScope, $http, url) {
 
-    this.$inject = [ '$scope', '$mdDialog', 'parentScope' ];
+    this.$inject = [ '$scope', '$mdDialog', 'parentScope', '$http', 'url' ];
     $scope.parentScope = parentScope;
-    // console.log(parentScope.selectedAppointments);
-    // console.log($scope.appointments, $scope.selectedDate, $scope.selectedAppointments);
-    
+    $scope.appointments = parentScope.appointments;
+    $scope.selectedDate = parentScope.selectedDate;
+    $scope.selectedAppointments = parentScope.selectedAppointments;
+    $scope.new = undefined;
+    const [ week, month, dd, yy ] = parentScope.selectedDate.toString().split(" ");
+    $scope.selectedDateTitle = [dd, month, yy].join(" ");
+
     $scope.hide = function() {
         $mdDialog.hide();
     };
@@ -83,16 +93,31 @@ function CalAppEditor($scope, $mdDialog, parentScope) {
     
     $scope.save = function() {
         console.log($scope.parentScope);
-        $mdDialog.hide("save");
+        if ($scope.new === undefined) {
+            $mdDialog.hide("save");
+            return;
+        }
+        $http.post(url, $scope.new).then((resp) => {
+            const item = $scope.new;
+            item.date = parseInt(item.date);
+            item.year = parseInt(item.year);
+            $scope.selectedAppointments.push(item);
+            $scope.appointments.push(item);                
+            // console.log("save data", $scope.new, resp);
+            $scope.new = undefined;
+            $mdDialog.hide("save");
+            debugger;
+        });
     };
 }
 
 function CalAppCalendar($scope, $stateParams, $location, $filter, $mdDialog,
-                        url, appointments, CalAppAppointment) {
+                        url, appointments) {
 
     this.$inject = [ '$scope', '$stateParams', '$location', '$filter', '$mdDialog',
-                     'url', 'appointments', 'CalAppAppointment' ];
+                     'url', 'appointments'];
     init($scope);
+
     
     // note: afterwards, functions only
 
@@ -100,30 +125,26 @@ function CalAppCalendar($scope, $stateParams, $location, $filter, $mdDialog,
         initDate($scope, $stateParams);
         initCalendar($scope);
         initDialog($scope);
-        initAPI($scope);        
+        initAPI($scope);
     }
     
     function initDialog($scope) {
         $scope.customFullscreen = false;
-        $scope.edit = function() {
+        $scope.edit = function(ev) {
             $mdDialog
                 .show({
                     controller: CalAppEditor,
                     templateUrl: 'edit.html',
-                    parent: angular.element(document.body),
+                    targetEvent: ev,
                     locals: {
                         parentScope : $scope
-                        /*
-                        appointments: $scope.appointments,
-                        selectedDate : $scope.selectedDate,
-                        selectedAppointments : $scope.selectedAppointments
-                        */
                     },
                     clickOutsideToClose:true,
                     fullscreen: $scope.customFullscreen // Only for -xs, -sm breakpoints.
                 })
                 .then(function(answer) {
                     $scope.status = 'You said the information was "' + answer + '".';
+                    debugger;
                 }, function() {
                     $scope.status = 'You cancelled the dialog.';
                 });
@@ -138,16 +159,7 @@ function CalAppCalendar($scope, $stateParams, $location, $filter, $mdDialog,
         $scope.year = $stateParams.year;
         $scope.month = $stateParams.month;
         $scope.date = $stateParams.date;
-        $scope.appointments = appointments
-            .map((a) => (Object.assign({}, a)))
-            .reduce((dict, item) => {
-                const { year, month, date } = item;
-                dict[year] = dict[year] || {};
-                dict[year][month] = dict[year][month] || {};
-                dict[year][month][date] = dict[year][month][date] || [];
-                dict[year][month][date].push(item);
-                return dict;
-            } , {});
+        $scope.appointments = appointments;
     }
     
     function initCalendar($scope) {
@@ -169,7 +181,8 @@ function CalAppCalendar($scope, $stateParams, $location, $filter, $mdDialog,
                 return "<br/><br/><br/><br/>";                
             } else {
                 return result.map((a, i) => {
-                    return `${i + 1}. ${a.title.slice(0,12)}...`;
+                    const title = a.title.slice(0, 15);
+                    return `<span >${i}. ${title}...</span>`;
                 }).join("<br/>");
             }
         });
@@ -196,11 +209,13 @@ function CalAppCalendar($scope, $stateParams, $location, $filter, $mdDialog,
     };
 
     function onDay(todate, callback) {
-        const [ week, month, date, year ] = todate.toString().split(" ");
+        const [ week, month, dd, yy ] = todate.toString().split(" ");
+        const date = parseInt(dd);
+        const year = parseInt(yy);
         const appointments = $scope.appointments;
-        if (hasAppointment(appointments, year, month, date)) {
-            const data = appointments[year][month][date];
-            return callback(null, data);
+        const filtered_appointments = getAppointment(appointments, year, month, date);
+        if (filtered_appointments.length > 0) {
+            return callback(null, filtered_appointments);
         } else {
             return callback(true, []);
         }
@@ -223,9 +238,20 @@ function CalAppCalendar($scope, $stateParams, $location, $filter, $mdDialog,
 
 function CalAppAppointment($resource, $stateParams, url) {
     this.$inject = [ '$resource', '$stateParams', 'url' ];
-    const year = $stateParams.year;
-    const month = convertNumToMonth($stateParams.month);
-    return $resource(url, {id : "@id"}, {update: { method: "PUT" } } );
+    // const year = $stateParams.year;
+    // const month = convertNumToMonth($stateParams.month);
+    return $resource(url,
+                     { id : "@id"},
+                     { update: { method: "PUT" },
+                       fetch: { method: "GET",
+                                interceptor : {
+                                    response: function(data) { return data; },
+                                    responseError : function(data) { return []; }
+                                },
+                                isArray: true
+                              }
+                     }
+                    );
 }
 
 function addAppointment($scope, CalAppAppointment, url) {
@@ -265,13 +291,18 @@ function getYYMMDD() {
 }
 
 function hasAppointment(appointments, year, month, date) {
-    if ((appointments[year]) &&
-        (appointments[year][month]) &&
-        (appointments[year][month][date])) {
-        return true;
-    } else {
+    const filtered_apps = getAppointment(appointments, year, month, date);
+    return (filtered_apps.length > 0);
+}
+
+function getAppointment(appointments, year, month, date) {
+    const filtered_apps = appointments.filter((a) => {
+        if ((a.year === year) && (a.month === month) && (a.date === date)) {
+            return true;
+        }
         return false;
-    }
+    });
+    return filtered_apps;
 }
 
 function convertNumToMonth(m) {
@@ -329,7 +360,6 @@ class Appointment {
     static overlap_time(earlier, later) {
         const earlier_min = Appointment.convert_min(earlier);
         const later_min = Appointment.convert_min(later);
-        console.log({earlier, later, earlier_min, later_min, ovelap : earlier_min > later_min});
         return earlier_min > later_min;
     }
    
@@ -390,19 +420,6 @@ let c = new Appointment({
 
 
 let m = new AppointmentManager();
-
-console.log("list of appointment to be added");
-a.print();
-b.print();
-c.print();
-
-console.log("list of appointment that was added: +a");
 m.push(c);
-m.print();
-console.log("list of appointment that was added: +b");
 m.push(b);
-m.print();
-console.log("list of appointment that was added: +c");
 m.push(a);
-m.print();
-
